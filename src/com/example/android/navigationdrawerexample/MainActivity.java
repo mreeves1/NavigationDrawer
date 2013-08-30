@@ -69,7 +69,8 @@ import android.widget.Toast;
  */
 public class MainActivity extends Activity {
     private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
+    private ListView mDrawerListLeft;
+    private ListView mDrawerListRight;
     private ActionBarDrawerToggle mDrawerToggle;
 
     private CharSequence mDrawerTitle;
@@ -84,14 +85,17 @@ public class MainActivity extends Activity {
         mTitle = mDrawerTitle = getTitle();
         mPlanetTitles = getResources().getStringArray(R.array.planets_array);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        mDrawerListLeft = (ListView) findViewById(R.id.left_drawer);
+        // no need to actually populate the right menu as obviously it would have different items and functionality than the left
+        mDrawerListRight = (ListView) findViewById(R.id.right_drawer); 
 
         // set a custom shadow that overlays the main content when the drawer opens
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+        mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.END);
         // set up the drawer's list view with items and click listener
-        mDrawerList.setAdapter(new ArrayAdapter<String>(this,
+        mDrawerListLeft.setAdapter(new ArrayAdapter<String>(this,
                 R.layout.drawer_list_item, mPlanetTitles));
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        mDrawerListLeft.setOnItemClickListener(new DrawerItemClickListener());
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
         getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -116,6 +120,8 @@ public class MainActivity extends Activity {
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
         };
+        // This would disable the home button from being the menu toggle and revert it to normal "back" behavior
+        // mDrawerToggle.setDrawerIndicatorEnabled(false); 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
         if (savedInstanceState == null) {
@@ -134,7 +140,7 @@ public class MainActivity extends Activity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         // If the nav drawer is open, hide action items related to the content view
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerListLeft);
         menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
         return super.onPrepareOptionsMenu(menu);
     }
@@ -149,6 +155,7 @@ public class MainActivity extends Activity {
         // Handle action buttons
         switch(item.getItemId()) {
         case R.id.action_websearch:
+            /*
             // create intent to perform web search for this planet
             Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
             intent.putExtra(SearchManager.QUERY, getActionBar().getTitle());
@@ -158,13 +165,22 @@ public class MainActivity extends Activity {
             } else {
                 Toast.makeText(this, R.string.app_not_available, Toast.LENGTH_LONG).show();
             }
+            */
+            mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+            // You can also use "GravityCompat.END" instead of mDrawerListRight
+            if (mDrawerLayout.isDrawerOpen(mDrawerListRight)) {
+                mDrawerLayout.closeDrawer(mDrawerListRight);
+            } else {
+                mDrawerLayout.openDrawer(mDrawerListRight);
+            }
+            
             return true;
         default:
             return super.onOptionsItemSelected(item);
         }
     }
 
-    /* The click listner for ListView in the navigation drawer */
+    /* The click listener for ListView in the navigation drawer */
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -183,9 +199,9 @@ public class MainActivity extends Activity {
         fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 
         // update selected item and title, then close the drawer
-        mDrawerList.setItemChecked(position, true);
+        mDrawerListLeft.setItemChecked(position, true);
         setTitle(mPlanetTitles[position]);
-        mDrawerLayout.closeDrawer(mDrawerList);
+        mDrawerLayout.closeDrawer(mDrawerListLeft);
     }
 
     @Override
